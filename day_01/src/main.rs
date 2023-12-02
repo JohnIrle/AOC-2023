@@ -3,11 +3,27 @@ use regex::Regex;
 
 fn main() {
     let input = read_to_string("./day_01/input_part_1.txt").expect("Could Not read file");
-    let sum_1: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]").unwrap())).sum();
-    let sum_2: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]|one|two|three|four|five|six|seven|eight|nine").unwrap())).sum();
 
-    println!("part 1 solution: {}", sum_1);
-    println!("part 2 solution: {}", sum_2);
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 2 {
+        match args[1].as_str() {
+            "part_1" => {
+                let sum_1: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]").unwrap())).sum();
+                println!("part 1 solution: {}", sum_1);
+            }
+            "part_2" => {
+                let sum_2: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]|one|two|three|four|five|six|seven|eight|nine").unwrap())).sum();
+                println!("part 2 solution: {}", sum_2);
+            }
+            _ =>  {
+                println!("Usage: <day> <part>");
+                std::process::exit(64);
+            }
+        }
+    } else {
+        println!("Usage: <day> <part>");
+        std::process::exit(64);
+    }
 }
 
 fn parse_line(line: &str, regex: Regex) -> u32 {

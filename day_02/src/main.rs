@@ -7,11 +7,26 @@ const BLUE_THRESHOLD: u32 = 14;
 fn main() {
     let input = read_to_string("./day_02/input_part_1.txt").expect("Could Not read file");
 
-    let part1_total = get_total(&input);
-    let part2_total = get_power_total(&input);
-
-    println!("Part one: {}", part1_total);
-    println!("Part two: {}", part2_total);
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() == 2 {
+        match args[1].as_str() {
+            "part_1" => {
+                let part1_total = get_total(&input);
+                println!("Part one: {}", part1_total);
+            }
+            "part_2" => {
+                let part2_total = get_power_total(&input);
+                println!("Part two: {}", part2_total);
+            }
+            _ =>  {
+                println!("Usage: <day> <part>");
+                std::process::exit(64);
+            }
+        }
+    } else {
+        println!("Usage: <day> <part>");
+        std::process::exit(64);
+    }
 }
 
 fn get_total(input: &str) -> u32 {
