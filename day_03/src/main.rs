@@ -64,8 +64,7 @@ impl<'a> Symbol<'a> {
 
 fn parse_numbers(input: &str) -> Vec<Number> {
     let re = Regex::new(r"\d+").unwrap();
-    input
-        .lines()
+    input.lines()
         .enumerate()
         .flat_map(|(index, line)| re.find_iter(line)
             .map(|m| Number::new(
@@ -78,8 +77,7 @@ fn parse_numbers(input: &str) -> Vec<Number> {
 
 fn parse_symbols(input: &str) -> Vec<Symbol> {
     let re = Regex::new(r"[+*=@&#$\-/%]+").unwrap();
-    input
-        .lines()
+    input.lines()
         .enumerate()
         .flat_map(|(index, line)| re.find_iter(line)
             .map(|m| Symbol::new(
@@ -97,8 +95,7 @@ fn sum_adjacent_numbers(input: &str) -> u32 {
         .iter()
         .filter(
             |number| symbols.iter().any(
-                |symbol| check_symbols_adjacent(number, symbol)
-            )
+                |symbol| symbol_adjacent_to_number(number, symbol))
         )
         .map(|number| number.number).sum();
     sum
@@ -108,20 +105,20 @@ fn sum_gear_ratios(input: &str) -> u32 {
     let numbers = parse_numbers(input);
     let symbols = parse_symbols(input);
     let gears = symbols.iter().filter(|&s| s.symbol == "*").collect::<Vec<&Symbol>>();
-    gears.iter().map(|g| check_two_numbers_adjacent(g, &numbers)).sum()
+    gears.iter().map(|g| two_numbers_adjacent_to_gear(g, &numbers)).sum()
 }
 
-fn check_symbols_adjacent(number: &Number, symbol: &Symbol) -> bool {
+fn symbol_adjacent_to_number(number: &Number, symbol: &Symbol) -> bool {
     let is_adjacent_col = (number.start - 1..=number.end + 1).contains(&symbol.column);
     let is_adjacent_row = (number.row - 1..=number.row + 1).contains(&symbol.row);
 
     is_adjacent_col && is_adjacent_row
 }
 
-fn check_two_numbers_adjacent(gear: &Symbol, numbers: &[Number]) -> u32 {
+fn two_numbers_adjacent_to_gear(gear: &Symbol, numbers: &[Number]) -> u32 {
     let adjacent_numbers = numbers
         .iter()
-        .filter(|n| check_symbols_adjacent(n, gear))
+        .filter(|n| symbol_adjacent_to_number(n, gear))
         .map(|n| n.number)
         .collect::<Vec<u32>>();
 
@@ -142,7 +139,7 @@ mod tests {
         let number = Number::new(467, 0, 2, 0);
         let symbol = Symbol::new("+", 3, 1);
 
-        assert!(check_symbols_adjacent(&number, &symbol))
+        assert!(symbol_adjacent_to_number(&number, &symbol))
     }
 
     #[test]
@@ -150,7 +147,7 @@ mod tests {
         let number = Number::new(467, 0, 2, 1);
         let symbol = Symbol::new("-", 1, 0);
 
-        assert!(check_symbols_adjacent(&number, &symbol));
+        assert!(symbol_adjacent_to_number(&number, &symbol));
     }
 
     #[test]
@@ -158,7 +155,7 @@ mod tests {
         let number = Number::new(114, 5, 8, 0);
         let symbol = Symbol::new("&", 3, 0);
 
-        assert!(!check_symbols_adjacent(&number, &symbol));
+        assert!(!symbol_adjacent_to_number(&number, &symbol));
     }
 
     #[test]
