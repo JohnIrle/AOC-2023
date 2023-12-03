@@ -1,0 +1,30 @@
+---
+source: day_03/src/main.rs
+expression: symbols
+---
+[
+    Symbol {
+        column: 3,
+        row: 1,
+    },
+    Symbol {
+        column: 6,
+        row: 3,
+    },
+    Symbol {
+        column: 3,
+        row: 4,
+    },
+    Symbol {
+        column: 5,
+        row: 5,
+    },
+    Symbol {
+        column: 3,
+        row: 8,
+    },
+    Symbol {
+        column: 5,
+        row: 8,
+    },
+]
