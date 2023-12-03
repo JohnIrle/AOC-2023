@@ -11,7 +11,10 @@ fn main() {
                 let part1_total = sum_adjacent_numbers(&input);
                 println!("Part one: {}", part1_total);
             }
-            "part_2" => {}
+            "part_2" => {
+                let part2_total = sum_gear_ratios(&input);
+                println!("Part two: {}", part2_total);
+            }
             _ => {
                 println!("Usage: <day> <part>");
                 std::process::exit(64);
@@ -43,14 +46,16 @@ impl Number {
 }
 
 #[derive(Debug)]
-struct Symbol {
+struct Symbol<'a> {
+    symbol: &'a str,
     column: isize,
     row: isize,
 }
 
-impl Symbol {
-    fn new(column: isize, row: isize) -> Self {
+impl<'a> Symbol<'a> {
+    fn new(symbol: &'a str, column: isize, row: isize) -> Self {
         Self {
+            symbol,
             column,
             row,
         }
@@ -59,7 +64,7 @@ impl Symbol {
 
 fn parse_numbers(input: &str) -> Vec<Number> {
     let re = Regex::new(r"\d+").unwrap();
-    let y = input
+    input
         .lines()
         .enumerate()
         .flat_map(|(index, line)| re.find_iter(line)
@@ -68,21 +73,20 @@ fn parse_numbers(input: &str) -> Vec<Number> {
                 m.start() as isize,
                 (m.end() - 1) as isize,
                 index as isize)
-            ).collect::<Vec<Number>>()).collect();
-    y
+            ).collect::<Vec<Number>>()).collect()
 }
 
 fn parse_symbols(input: &str) -> Vec<Symbol> {
     let re = Regex::new(r"[+*=@&#$\-/%]+").unwrap();
-    let y = input
+    input
         .lines()
         .enumerate()
         .flat_map(|(index, line)| re.find_iter(line)
             .map(|m| Symbol::new(
+                m.as_str(),
                 m.start() as isize,
                 index as isize)
-            ).collect::<Vec<Symbol>>()).collect();
-    y
+            ).collect::<Vec<Symbol>>()).collect()
 }
 
 fn sum_adjacent_numbers(input: &str) -> u32 {
@@ -93,22 +97,38 @@ fn sum_adjacent_numbers(input: &str) -> u32 {
         .iter()
         .filter(
             |number| symbols.iter().any(
-                |symbol| check_bounds(number, symbol)
+                |symbol| check_symbols_adjacent(number, symbol)
             )
         )
         .map(|number| number.number).sum();
     sum
 }
 
+fn sum_gear_ratios(input: &str) -> u32 {
+    let numbers = parse_numbers(input);
+    let symbols = parse_symbols(input);
+    let gears = symbols.iter().filter(|&s| s.symbol == "*").collect::<Vec<&Symbol>>();
+    gears.iter().map(|g| check_two_numbers_adjacent(g, &numbers)).sum()
+}
 
-fn check_bounds(number: &Number, symbol: &Symbol) -> bool {
+fn check_symbols_adjacent(number: &Number, symbol: &Symbol) -> bool {
     let is_adjacent_col = (number.start - 1..=number.end + 1).contains(&symbol.column);
     let is_adjacent_row = (number.row - 1..=number.row + 1).contains(&symbol.row);
-    if is_adjacent_col && is_adjacent_row {
-        return true;
-    }
 
-    false
+    is_adjacent_col && is_adjacent_row
+}
+
+fn check_two_numbers_adjacent(gear: &Symbol, numbers: &[Number]) -> u32 {
+    let adjacent_numbers = numbers
+        .iter()
+        .filter(|n| check_symbols_adjacent(n, gear))
+        .map(|n| n.number)
+        .collect::<Vec<u32>>();
+
+    match adjacent_numbers.len() {
+        2 => adjacent_numbers.iter().product::<u32>(),
+        _ => 0
+    }
 }
 
 
@@ -121,32 +141,32 @@ mod tests {
     #[test]
     fn check_bounds_missing_numbers() {
         let number = Number::new(592, 2, 4, 6);
-        let symbol = Symbol::new(5, 5);
-        assert!(check_bounds(&number, &symbol))
+        let symbol = Symbol::new("*", 5, 5);
+        assert!(check_symbols_adjacent(&number, &symbol))
     }
 
     #[test]
     fn test_check_bounds() {
         let number = Number::new(467, 0, 2, 0);
-        let symbol = Symbol::new(3, 1);
+        let symbol = Symbol::new("+", 3, 1);
 
-        assert!(check_bounds(&number, &symbol))
+        assert!(check_symbols_adjacent(&number, &symbol))
     }
 
     #[test]
     fn test_check_bounds_above() {
         let number = Number::new(467, 0, 2, 1);
-        let symbol = Symbol::new(1, 0);
+        let symbol = Symbol::new("-", 1, 0);
 
-        assert!(check_bounds(&number, &symbol));
+        assert!(check_symbols_adjacent(&number, &symbol));
     }
 
     #[test]
     fn test_check_bounds_no_hit() {
         let number = Number::new(114, 5, 8, 0);
-        let symbol = Symbol::new(3, 0);
+        let symbol = Symbol::new("&", 3, 0);
 
-        assert!(!check_bounds(&number, &symbol));
+        assert!(!check_symbols_adjacent(&number, &symbol));
     }
 
     #[test]
@@ -195,6 +215,7 @@ mod tests {
         assert_debug_snapshot!(symbols, @r###"
         [
             Symbol {
+                symbol: "*",
                 column: 3,
                 row: 0,
             },
@@ -233,5 +254,21 @@ mod tests {
 .664.598..
 "#;
         assert_eq!(sum_adjacent_numbers(input), 4361);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input = r#"467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+"#;
+        assert_eq!(sum_gear_ratios(input), 467835);
     }
 }
