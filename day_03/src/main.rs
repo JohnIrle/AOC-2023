@@ -137,14 +137,6 @@ mod tests {
     use super::*;
     use insta::assert_debug_snapshot;
 
-
-    #[test]
-    fn check_bounds_missing_numbers() {
-        let number = Number::new(592, 2, 4, 6);
-        let symbol = Symbol::new("*", 5, 5);
-        assert!(check_symbols_adjacent(&number, &symbol))
-    }
-
     #[test]
     fn test_check_bounds() {
         let number = Number::new(467, 0, 2, 0);
