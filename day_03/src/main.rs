@@ -23,10 +23,7 @@ fn main() {
     }
 }
 
-// need to find number and positions
-// need to find symbols and postions
-// need to iter over numbers and see if they are near symbolso
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug)]
 struct Number {
     number: u32,
     start: isize,
@@ -45,7 +42,7 @@ impl Number {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 struct Symbol {
     column: isize,
     row: isize,
