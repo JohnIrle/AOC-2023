@@ -134,6 +134,18 @@ mod tests {
     use super::*;
     use insta::assert_debug_snapshot;
 
+    const INPUT: &str = r#"467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..
+"#;
+
     #[test]
     fn test_check_bounds() {
         let number = Number::new(467, 0, 2, 0);
@@ -182,18 +194,7 @@ mod tests {
 
     #[test]
     fn test_parse_numbers_parses_multi_line() {
-        let input = r#"467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598..
-"#;
-        let numbers = parse_numbers(input);
+        let numbers = parse_numbers(INPUT);
         assert_debug_snapshot!(numbers);
     }
 
@@ -214,50 +215,17 @@ mod tests {
 
     #[test]
     fn test_parse_symbols_parses_multi_line() {
-        let input = r#"467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598..
-"#;
-        let symbols = parse_symbols(input);
+        let symbols = parse_symbols(INPUT);
         assert_debug_snapshot!(symbols);
     }
 
     #[test]
     fn test_part_1() {
-        let input = r#"467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598..
-"#;
-        assert_eq!(sum_adjacent_numbers(input), 4361);
+        assert_eq!(sum_adjacent_numbers(INPUT), 4361);
     }
 
     #[test]
     fn test_part_2() {
-        let input = r#"467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598..
-"#;
-        assert_eq!(sum_gear_ratios(input), 467835);
+        assert_eq!(sum_gear_ratios(INPUT), 467835);
     }
 }
