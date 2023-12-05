@@ -44,14 +44,14 @@ fn total_cards(input: &str) -> usize {
         let (winning_numbers, cards) = parse_line(line);
         let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
 
-        let number_of_this_card = cards_at_index.get(index);
+        let num_winners = winners_score.len();
+        let number_of_cards_at_index = cards_at_index.get(index);
 
-        if let Some(number) = number_of_this_card {
+        if let Some(number) = number_of_cards_at_index {
             for _ in 0..*number {
-                for i in 0..winners_score.len() {
-                    match cards_at_index.get_mut((index + i) + 1) {
-                        Some(value) => *value += 1,
-                        None => cards_at_index.push(1),
+                for i in 0..num_winners {
+                    if let Some(value) = cards_at_index.get_mut((index + i) + 1) {
+                        *value += 1
                     }
                 }
             }
