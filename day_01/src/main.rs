@@ -1,5 +1,5 @@
-use std::fs::read_to_string;
 use regex::Regex;
+use std::fs::read_to_string;
 
 fn main() {
     let input = read_to_string("./day_01/input_part_1.txt").expect("Could Not read file");
@@ -8,14 +8,26 @@ fn main() {
     if args.len() == 2 {
         match args[1].as_str() {
             "part_1" => {
-                let sum_1: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]").unwrap())).sum();
+                let sum_1: u32 = input
+                    .lines()
+                    .map(|l| parse_line(l, Regex::new(r"[0-9]").unwrap()))
+                    .sum();
                 println!("part 1 solution: {}", sum_1);
             }
             "part_2" => {
-                let sum_2: u32 = input.lines().map(|l| parse_line(l, Regex::new(r"[0-9]|one|two|three|four|five|six|seven|eight|nine").unwrap())).sum();
+                let sum_2: u32 = input
+                    .lines()
+                    .map(|l| {
+                        parse_line(
+                            l,
+                            Regex::new(r"[0-9]|one|two|three|four|five|six|seven|eight|nine")
+                                .unwrap(),
+                        )
+                    })
+                    .sum();
                 println!("part 2 solution: {}", sum_2);
             }
-            _ =>  {
+            _ => {
                 println!("Usage: <day> <part>");
                 std::process::exit(64);
             }
@@ -40,7 +52,7 @@ fn parse_line(line: &str, regex: Regex) -> u32 {
 fn parse_words(line: &str, re: Regex) -> Vec<&str> {
     let mut words: Vec<&str> = Vec::new();
     for i in 0..line.len() {
-        if let Some(word)= re.find(&line[i..]) {
+        if let Some(word) = re.find(&line[i..]) {
             words.push(word.as_str())
         }
     }
@@ -58,15 +70,13 @@ fn word_to_value(word: &str) -> u32 {
         "seven" => 7,
         "eight" => 8,
         "nine" => 9,
-        x => x.parse::<u32>().unwrap()
+        x => x.parse::<u32>().unwrap(),
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn test_part_1() {
@@ -75,7 +85,10 @@ pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet";
 
-        let sum_1: u32 = lines.lines().map(|l| parse_line(l, Regex::new(r"\d").unwrap())).sum();
+        let sum_1: u32 = lines
+            .lines()
+            .map(|l| parse_line(l, Regex::new(r"\d").unwrap()))
+            .sum();
         assert_eq!(sum_1, 142)
     }
 
@@ -89,7 +102,15 @@ xtwone3four
 zoneight234
 7pqrstsixteen";
 
-        let sum_2: u32 = lines.lines().map(|l| parse_line(l, Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").unwrap())).sum();
+        let sum_2: u32 = lines
+            .lines()
+            .map(|l| {
+                parse_line(
+                    l,
+                    Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").unwrap(),
+                )
+            })
+            .sum();
         assert_eq!(sum_2, 281);
     }
 }

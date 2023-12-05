@@ -27,11 +27,14 @@ fn total_points(input: &str) -> usize {
     let mut total = 0;
     for line in input.lines() {
         let (winning_numbers, cards) = parse_line(line);
-        let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
+        let winners_score = cards
+            .iter()
+            .filter(|card| winning_numbers.contains(card))
+            .collect::<Vec<_>>();
         match winners_score.len() {
             0 => {}
             1 => total += 1,
-            n => total += 2_usize.pow(n as u32 - 1)
+            n => total += 2_usize.pow(n as u32 - 1),
         }
     }
     total
@@ -42,7 +45,10 @@ fn total_cards(input: &str) -> usize {
 
     input.lines().enumerate().for_each(|(index, line)| {
         let (winning_numbers, cards) = parse_line(line);
-        let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
+        let winners_score = cards
+            .iter()
+            .filter(|card| winning_numbers.contains(card))
+            .collect::<Vec<_>>();
 
         let num_winners = winners_score.len();
         let number_of_cards_at_index = cards_at_index.get(index);
@@ -66,7 +72,10 @@ fn parse_line(line: &str) -> (Vec<&str>, Vec<&str>) {
     let mut rest = numbers.split(" | ");
     let (winning, cards) = (rest.next().unwrap(), rest.next().unwrap());
 
-    (winning.split_whitespace().collect(), cards.split_whitespace().collect())
+    (
+        winning.split_whitespace().collect(),
+        cards.split_whitespace().collect(),
+    )
 }
 
 #[cfg(test)]

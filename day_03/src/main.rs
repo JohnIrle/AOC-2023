@@ -1,5 +1,5 @@
-use std::fs::read_to_string;
 use regex::Regex;
+use std::fs::read_to_string;
 
 fn main() {
     let input = read_to_string("./day_03/part_1.txt").expect("Could Not read file");
@@ -64,27 +64,35 @@ impl<'a> Symbol<'a> {
 
 fn parse_numbers(input: &str) -> Vec<Number> {
     let re = Regex::new(r"\d+").unwrap();
-    input.lines()
+    input
+        .lines()
         .enumerate()
-        .flat_map(|(index, line)| re.find_iter(line)
-            .map(|m| Number::new(
-                m.as_str().parse().unwrap(),
-                m.start() as isize,
-                (m.end() - 1) as isize,
-                index as isize)
-            ).collect::<Vec<Number>>()).collect()
+        .flat_map(|(index, line)| {
+            re.find_iter(line)
+                .map(|m| {
+                    Number::new(
+                        m.as_str().parse().unwrap(),
+                        m.start() as isize,
+                        (m.end() - 1) as isize,
+                        index as isize,
+                    )
+                })
+                .collect::<Vec<Number>>()
+        })
+        .collect()
 }
 
 fn parse_symbols(input: &str) -> Vec<Symbol> {
     let re = Regex::new(r"[+*=@&#$\-/%]+").unwrap();
-    input.lines()
+    input
+        .lines()
         .enumerate()
-        .flat_map(|(index, line)| re.find_iter(line)
-            .map(|m| Symbol::new(
-                m.as_str(),
-                m.start() as isize,
-                index as isize)
-            ).collect::<Vec<Symbol>>()).collect()
+        .flat_map(|(index, line)| {
+            re.find_iter(line)
+                .map(|m| Symbol::new(m.as_str(), m.start() as isize, index as isize))
+                .collect::<Vec<Symbol>>()
+        })
+        .collect()
 }
 
 fn sum_adjacent_numbers(input: &str) -> u32 {
@@ -93,19 +101,27 @@ fn sum_adjacent_numbers(input: &str) -> u32 {
 
     let sum = numbers
         .iter()
-        .filter(
-            |number| symbols.iter().any(
-                |symbol| symbol_adjacent_to_number(number, symbol))
-        )
-        .map(|number| number.number).sum();
+        .filter(|number| {
+            symbols
+                .iter()
+                .any(|symbol| symbol_adjacent_to_number(number, symbol))
+        })
+        .map(|number| number.number)
+        .sum();
     sum
 }
 
 fn sum_gear_ratios(input: &str) -> u32 {
     let numbers = parse_numbers(input);
     let symbols = parse_symbols(input);
-    let gears = symbols.iter().filter(|&s| s.symbol == "*").collect::<Vec<&Symbol>>();
-    gears.iter().map(|g| two_numbers_adjacent_to_gear(g, &numbers)).sum()
+    let gears = symbols
+        .iter()
+        .filter(|&s| s.symbol == "*")
+        .collect::<Vec<&Symbol>>();
+    gears
+        .iter()
+        .map(|g| two_numbers_adjacent_to_gear(g, &numbers))
+        .sum()
 }
 
 fn symbol_adjacent_to_number(number: &Number, symbol: &Symbol) -> bool {
@@ -124,10 +140,9 @@ fn two_numbers_adjacent_to_gear(gear: &Symbol, numbers: &[Number]) -> u32 {
 
     match adjacent_numbers.len() {
         2 => adjacent_numbers.iter().product::<u32>(),
-        _ => 0
+        _ => 0,
     }
 }
-
 
 #[cfg(test)]
 mod tests {

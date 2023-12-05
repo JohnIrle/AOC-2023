@@ -30,7 +30,16 @@ fn parts(input: &str) {
     let temperature_to_humidity = parse_map(parts.next().unwrap());
     let humidity_to_location = parse_map(parts.next().unwrap());
 
-    dbg!(seeds, seed_to_soil, soil_to_fertilizer, fertilizer_to_water, water_to_light, light_to_temperature, temperature_to_humidity, humidity_to_location);
+    dbg!(
+        seeds,
+        seed_to_soil,
+        soil_to_fertilizer,
+        fertilizer_to_water,
+        water_to_light,
+        light_to_temperature,
+        temperature_to_humidity,
+        humidity_to_location
+    );
 }
 
 fn parse_map(input: &str) -> Vec<Option<(u32, u32, u32)>> {
@@ -38,13 +47,10 @@ fn parse_map(input: &str) -> Vec<Option<(u32, u32, u32)>> {
     let numbers = numbers_part.collect::<Vec<_>>();
     let number_tuples = numbers
         .iter()
-        .map(|i| i.split_whitespace()
-            .filter_map(|x| x.parse::<u32>().ok()))
-        .map(|x| {
-            match x.collect::<Vec<u32>>()[..] {
-                [a, b, c] => Some((a, b, c)),
-                _ => None
-            }
+        .map(|i| i.split_whitespace().filter_map(|x| x.parse::<u32>().ok()))
+        .map(|x| match x.collect::<Vec<u32>>()[..] {
+            [a, b, c] => Some((a, b, c)),
+            _ => None,
         })
         .collect::<Vec<_>>();
     number_tuples

@@ -18,7 +18,7 @@ fn main() {
                 let part2_total = get_power_total(&input);
                 println!("Part two: {}", part2_total);
             }
-            _ =>  {
+            _ => {
                 println!("Usage: <day> <part>");
                 std::process::exit(64);
             }
@@ -30,14 +30,18 @@ fn main() {
 }
 
 fn get_total(input: &str) -> u32 {
-    input.lines().enumerate().map(|(index, line)| {
-        let game_number = index + 1;
-        let cubes = parse_cubes(line);
-        if cubes.iter().all(|c| !is_over_threshold(*c)) {
-            return game_number as u32
-        }
-        0
-    }).sum::<u32>()
+    input
+        .lines()
+        .enumerate()
+        .map(|(index, line)| {
+            let game_number = index + 1;
+            let cubes = parse_cubes(line);
+            if cubes.iter().all(|c| !is_over_threshold(*c)) {
+                return game_number as u32;
+            }
+            0
+        })
+        .sum::<u32>()
 }
 
 fn is_over_threshold((qty, color): (u32, &str)) -> bool {
@@ -52,36 +56,49 @@ fn is_over_threshold((qty, color): (u32, &str)) -> bool {
 fn parse_cubes(line: &str) -> Vec<(u32, &str)> {
     let game = line.split(": ").collect::<Vec<&str>>()[1];
     let sets = game.split("; ");
-    let cubes = sets
-        .flat_map(|s| s.split(", "))
-        .filter_map(|c| {
-            let mut parts = c.split(' ');
-            let qty = parts.next().map(|q| q.parse::<u32>().unwrap());
-            let color = parts.next();
-            match (qty, color) {
-                (Some(qty), Some(color)) => Some((qty, color)),
-                _ => None
-            }
-        });
+    let cubes = sets.flat_map(|s| s.split(", ")).filter_map(|c| {
+        let mut parts = c.split(' ');
+        let qty = parts.next().map(|q| q.parse::<u32>().unwrap());
+        let color = parts.next();
+        match (qty, color) {
+            (Some(qty), Some(color)) => Some((qty, color)),
+            _ => None,
+        }
+    });
     cubes.collect()
 }
 
 fn get_power_total(input: &str) -> u32 {
-    input.lines().map(|line| {
-        let cubes = parse_cubes(line);
-        let mut max_green = 0;
-        let mut max_blue = 0;
-        let mut max_red = 0;
-        for (qty, color) in cubes {
-            match color {
-                "red" => if qty > max_red {max_red = qty}
-                "green" => if qty > max_green { max_green = qty}
-                "blue" => if qty > max_blue { max_blue = qty }
-                _ => unreachable!()
+    input
+        .lines()
+        .map(|line| {
+            let cubes = parse_cubes(line);
+            let mut max_green = 0;
+            let mut max_blue = 0;
+            let mut max_red = 0;
+            for (qty, color) in cubes {
+                match color {
+                    "red" => {
+                        if qty > max_red {
+                            max_red = qty
+                        }
+                    }
+                    "green" => {
+                        if qty > max_green {
+                            max_green = qty
+                        }
+                    }
+                    "blue" => {
+                        if qty > max_blue {
+                            max_blue = qty
+                        }
+                    }
+                    _ => unreachable!(),
+                }
             }
-        }
-        max_green * max_blue * max_red
-    }).sum()
+            max_green * max_blue * max_red
+        })
+        .sum()
 }
 
 #[cfg(test)]
