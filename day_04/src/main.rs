@@ -40,7 +40,7 @@ fn total_points(input: &str) -> usize {
 fn total_cards(input: &str) -> usize {
     let mut cards_at_index = vec![1; input.lines().collect::<Vec<_>>().len()];
 
-    for (index, line) in input.lines().enumerate() {
+    input.lines().enumerate().for_each(|(index, line)| {
         let (winning_numbers, cards) = parse_line(line);
         let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
 
@@ -56,7 +56,8 @@ fn total_cards(input: &str) -> usize {
                 }
             }
         }
-    }
+    });
+
     cards_at_index.iter().sum()
 }
 
