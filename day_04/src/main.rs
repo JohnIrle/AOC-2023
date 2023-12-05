@@ -9,7 +9,9 @@ fn main() {
             "part_1" => {
                 println!("Part 1: {}", total_points(&input));
             }
-            "part_2" => {}
+            "part_2" => {
+                println!("Part 2: {}", total_cards(&input));
+            }
             _ => {
                 println!("Usage: <day> <part>");
                 std::process::exit(64);
@@ -24,8 +26,8 @@ fn main() {
 fn total_points(input: &str) -> usize {
     let mut total = 0;
     for line in input.lines() {
-        let (winning_numbers, your_numbers) = parse_line(line);
-        let winners_score = your_numbers.iter().filter(|n| winning_numbers.contains(n)).collect::<Vec<_>>();
+        let (winning_numbers, cards) = parse_line(line);
+        let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
         match winners_score.len() {
             0 => {}
             1 => total += 1,
@@ -33,6 +35,29 @@ fn total_points(input: &str) -> usize {
         }
     }
     total
+}
+
+fn total_cards(input: &str) -> usize {
+    let mut cards_at_index = vec![1; input.lines().collect::<Vec<_>>().len()];
+
+    for (index, line) in input.lines().enumerate() {
+        let (winning_numbers, cards) = parse_line(line);
+        let winners_score = cards.iter().filter(|card| winning_numbers.contains(card)).collect::<Vec<_>>();
+
+        let number_of_this_card = cards_at_index.get(index);
+
+        if let Some(number) = number_of_this_card {
+            for _ in 0..*number {
+                for i in 0..winners_score.len() {
+                    match cards_at_index.get_mut((index + i) + 1) {
+                        Some(value) => *value += 1,
+                        None => cards_at_index.push(1),
+                    }
+                }
+            }
+        }
+    }
+    cards_at_index.iter().sum()
 }
 
 fn parse_line(line: &str) -> (Vec<&str>, Vec<&str>) {
@@ -47,15 +72,21 @@ fn parse_line(line: &str) -> (Vec<&str>, Vec<&str>) {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_part_1() {
-        let input = r"Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+    const INPUT: &str = r"Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 ";
-        assert_eq!(total_points(input), 13);
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(total_points(INPUT), 13);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(total_cards(INPUT), 30);
     }
 }
