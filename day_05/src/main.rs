@@ -6,7 +6,9 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() == 2 {
         match args[1].as_str() {
-            "part_1" => {}
+            "part_1" => {
+                println!("Part 1: {}", part_1(&input))
+            }
             "part_2" => {}
             _ => {
                 println!("Usage: <day> <part>");
@@ -19,50 +21,55 @@ fn main() {
     }
 }
 
-fn parts(input: &str) {
+type Section = (u64, u64, u64);
+
+fn part_1(input: &str) -> u64 {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds(parts.next().unwrap());
-    let seed_to_soil = parse_map(parts.next().unwrap());
-    let soil_to_fertilizer = parse_map(parts.next().unwrap());
-    let fertilizer_to_water = parse_map(parts.next().unwrap());
-    let water_to_light = parse_map(parts.next().unwrap());
-    let light_to_temperature = parse_map(parts.next().unwrap());
-    let temperature_to_humidity = parse_map(parts.next().unwrap());
-    let humidity_to_location = parse_map(parts.next().unwrap());
+    let sections = parts.map(parse_map);
 
-    dbg!(
-        seeds,
-        seed_to_soil,
-        soil_to_fertilizer,
-        fertilizer_to_water,
-        water_to_light,
-        light_to_temperature,
-        temperature_to_humidity,
-        humidity_to_location
-    );
-}
-
-fn parse_map(input: &str) -> Vec<Option<(u32, u32, u32)>> {
-    let numbers_part = input.split('\n').skip(1);
-    let numbers = numbers_part.collect::<Vec<_>>();
-    let number_tuples = numbers
+    seeds
         .iter()
-        .map(|i| i.split_whitespace().filter_map(|x| x.parse::<u32>().ok()))
-        .map(|x| match x.collect::<Vec<u32>>()[..] {
-            [a, b, c] => Some((a, b, c)),
-            _ => None,
+        .map(|&seed| {
+            sections.clone().fold(seed, |current_seed, section| {
+                section
+                    .iter()
+                    .fold(None, |result, &z| match result {
+                        None => map_src_to_destination(current_seed, z),
+                        Some(x) => Some(x),
+                    })
+                    .unwrap_or(current_seed)
+            })
         })
-        .collect::<Vec<_>>();
-    number_tuples
+        .min()
+        .unwrap()
 }
 
-fn parse_seeds(input: &str) -> Vec<u32> {
+fn map_src_to_destination(incoming: u64, map_row: Section) -> Option<u64> {
+    match map_row {
+        (dst, src, range) if src <= incoming && incoming <= (src + range) => {
+            Some(dst + incoming - src)
+        }
+        _ => None,
+    }
+}
+
+fn parse_map(input: &str) -> Vec<Section> {
+    input
+        .split('\n')
+        .skip(1)
+        .map(|i| i.split_whitespace().filter_map(|x| x.parse::<u64>().ok()))
+        .map(|mut x| (x.next().unwrap(), x.next().unwrap(), x.next().unwrap()))
+        .collect()
+}
+
+fn parse_seeds(input: &str) -> Vec<u64> {
     let mut seed_line = input.split(": ").skip(1);
     seed_line
         .next()
         .unwrap()
         .split_whitespace()
-        .filter_map(|x| x.parse::<u32>().ok())
+        .filter_map(|x| x.parse::<u64>().ok())
         .collect()
 }
 
@@ -105,8 +112,27 @@ humidity-to-location map:
 56 93 4";
 
     #[test]
+    fn test_map_src_to_destination_no_match() {
+        let res = map_src_to_destination(14, (50, 98, 2));
+
+        assert_eq!(res, Some(14));
+    }
+    #[test]
+    fn test_map_src_to_destination_match() {
+        let res = map_src_to_destination(51, (50, 98, 2));
+
+        assert_eq!(res, Some(51));
+    }
+    #[test]
+    fn test_map_src_to_destination_match_2() {
+        let res = map_src_to_destination(79, (52, 50, 48));
+
+        assert_eq!(res, Some(81));
+    }
+
+    #[test]
     fn test_part_1() {
-        assert_eq!(parts(INPUT), ())
+        assert_eq!(part_1(INPUT), 35)
     }
 
     fn test_part_2() {}
