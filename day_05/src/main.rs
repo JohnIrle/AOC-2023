@@ -9,7 +9,9 @@ fn main() {
             "part_1" => {
                 println!("Part 1: {}", part_1(&input))
             }
-            "part_2" => {}
+            "part_2" => {
+                println!("Part 2: {}", part_2(&input))
+            }
             _ => {
                 println!("Usage: <day> <part>");
                 std::process::exit(64);
@@ -21,32 +23,74 @@ fn main() {
     }
 }
 
-type Section = (u64, u64, u64);
+type Row = (u64, u64, u64);
+type Section = Vec<Row>;
 
 fn part_1(input: &str) -> u64 {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds(parts.next().unwrap());
-    let sections = parts.map(parse_map);
+    let sections = parts.map(parse_section).collect::<Vec<Section>>();
 
     seeds
         .iter()
-        .map(|&seed| {
-            sections.clone().fold(seed, |current_seed, section| {
-                section
-                    .iter()
-                    .fold(None, |result, &z| match result {
-                        None => map_src_to_destination(current_seed, z),
-                        Some(x) => Some(x),
-                    })
-                    .unwrap_or(current_seed)
-            })
-        })
+        .map(|&seed| get_lowest_location(seed, &sections))
         .min()
         .unwrap()
 }
 
-fn map_src_to_destination(incoming: u64, map_row: Section) -> Option<u64> {
-    match map_row {
+fn get_lowest_location(seed: u64, sections: &[Section]) -> u64 {
+    sections.iter().fold(seed, |current_seed, section| {
+        section
+            .iter()
+            .fold(None, |result, &z| match result {
+                None => map_src_to_destination(current_seed, z),
+                Some(x) => Some(x),
+            })
+            .unwrap_or(current_seed)
+    })
+}
+
+fn part_2(input: &str) -> u64 {
+    let mut parts = input.split("\n\n");
+    let seeds = parse_seeds(parts.next().unwrap());
+    let sections = parts.map(parse_section).collect::<Vec<Section>>();
+    let mut result = u64::MAX;
+    let mut left = None;
+    let mut right = None;
+    let mut pairs = seeds
+        .chunks(2)
+        .map(|c| (c[0], c[0] + c[1]))
+        .collect::<Vec<(u64, u64)>>();
+    pairs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    for (from, to) in pairs {
+        for i in from..to {
+            match (left, right) {
+                (None, None) => {
+                    left = Some(from);
+                    right = Some(i);
+                    let lowest = get_lowest_location(i, &sections);
+                    if lowest < result {
+                        result = lowest
+                    }
+                }
+                (Some(left), Some(right)) if (left..right).contains(&i) => {
+                    println!("skipped {}", i);
+                }
+                _ => {
+                    right = Some(i);
+                    let lowest = get_lowest_location(i, &sections);
+                    if lowest < result {
+                        result = lowest
+                    }
+                }
+            }
+        }
+    }
+    result
+}
+
+fn map_src_to_destination(incoming: u64, map_section: Row) -> Option<u64> {
+    match map_section {
         (dst, src, range) if src <= incoming && incoming <= (src + range) => {
             Some(dst + incoming - src)
         }
@@ -54,7 +98,7 @@ fn map_src_to_destination(incoming: u64, map_row: Section) -> Option<u64> {
     }
 }
 
-fn parse_map(input: &str) -> Vec<Section> {
+fn parse_section(input: &str) -> Section {
     input
         .split('\n')
         .skip(1)
@@ -135,5 +179,8 @@ humidity-to-location map:
         assert_eq!(part_1(INPUT), 35)
     }
 
-    fn test_part_2() {}
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(INPUT), 46)
+    }
 }
