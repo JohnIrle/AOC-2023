@@ -1,4 +1,5 @@
 use std::fs::read_to_string;
+use std::thread;
 
 fn main() {
     let input = read_to_string("./day_05/part_1.txt").expect("Could Not read file");
@@ -54,39 +55,32 @@ fn part_2(input: &str) -> u64 {
     let mut parts = input.split("\n\n");
     let seeds = parse_seeds(parts.next().unwrap());
     let sections = parts.map(parse_section).collect::<Vec<Section>>();
-    let mut result = u64::MAX;
-    let mut left = None;
-    let mut right = None;
-    let mut pairs = seeds
+    let pairs = seeds
         .chunks(2)
         .map(|c| (c[0], c[0] + c[1]))
         .collect::<Vec<(u64, u64)>>();
-    pairs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-    for (from, to) in pairs {
-        for i in from..to {
-            match (left, right) {
-                (None, None) => {
-                    left = Some(from);
-                    right = Some(i);
-                    let lowest = get_lowest_location(i, &sections);
-                    if lowest < result {
-                        result = lowest
-                    }
-                }
-                (Some(left), Some(right)) if (left..right).contains(&i) => {
-                    println!("skipped {}", i);
-                }
-                _ => {
-                    right = Some(i);
-                    let lowest = get_lowest_location(i, &sections);
-                    if lowest < result {
-                        result = lowest
-                    }
+    let mut handles = vec![];
+    for pair in pairs.clone() {
+        let sections_clone = sections.clone();
+        let handle = thread::spawn(move || {
+            let (from, to) = pair;
+            dbg!(from, to);
+            let mut result = u64::MAX;
+            for i in from..to {
+                let lowest = get_lowest_location(i, &sections_clone);
+                if lowest < result {
+                    result = lowest
                 }
             }
-        }
+            println!("{result}");
+        });
+        handles.push(handle);
     }
-    result
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    0
 }
 
 fn map_src_to_destination(incoming: u64, map_section: Row) -> Option<u64> {
